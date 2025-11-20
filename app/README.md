@@ -20,7 +20,7 @@ The application follows a containerized microservices architecture:
 - **Backend**: Reflex (FastAPI) Python application.
 - **Database**: PostgreSQL for data persistence.
 - **Task Queue**: Redis + Celery for async background tasks (OCR).
-- **Storage**: MinIO (S3-compatible) for document storage.
+- **Storage**: Oracle Object Storage (S3-compatible) for document storage.
 
 ## Technology Stack
 
@@ -95,13 +95,14 @@ See `.env.example` for a complete list of required variables.
 
 1. Ensure all secrets in `.env` are strong and secure.
 2. Update `nginx.conf` with your domain and SSL certificates (Certbot recommended).
-3. Run `docker-compose up -d` in your production server.
+3. Configure Oracle Object Storage credentials in your `.env` (see `STORAGE_*` variables) and ensure the bucket exists.
+4. Run `docker-compose up -d` in your production server.
 
 ## Troubleshooting
 
 - **OCR Fails**: Check Celery logs `docker-compose logs celery`. Ensure Tesseract is installed in the worker container.
 - **Database Connection**: Ensure PostgreSQL is healthy `docker-compose logs postgres`.
-- **MinIO Access**: Check `MINIO_ENDPOINT` matches the container name in Docker network.
+- **Oracle Object Storage Access**: Verify the `STORAGE_ENDPOINT`, `STORAGE_ACCESS_KEY`, and `STORAGE_SECRET_KEY` match your OCI bucket and tenancy configuration.
 
 ## License
 

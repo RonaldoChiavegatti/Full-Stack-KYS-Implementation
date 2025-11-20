@@ -11,16 +11,31 @@ class StorageService:
         default_endpoint = "localhost:9000"
         if os.path.exists("/.dockerenv"):
             default_endpoint = "minio:9000"
-        self.internal_endpoint = os.getenv("MINIO_ENDPOINT", default_endpoint)
-        self.public_endpoint = os.getenv("MINIO_PUBLIC_ENDPOINT", "localhost:9000")
+
+        self.internal_endpoint = (
+            os.getenv("STORAGE_ENDPOINT")
+            or os.getenv("MINIO_ENDPOINT")
+            or default_endpoint
+        )
+        self.public_endpoint = (
+            os.getenv("STORAGE_PUBLIC_ENDPOINT")
+            or os.getenv("MINIO_PUBLIC_ENDPOINT")
+            or "localhost:9000"
+        )
+        self.bucket_name = os.getenv("STORAGE_BUCKET", "fiscal-documents")
+
+        secure_env = os.getenv("STORAGE_SECURE")
+        if secure_env is not None:
+            secure = secure_env.lower() == "true"
+        else:
+            secure = "oraclecloud.com" in self.internal_endpoint
         try:
             self.client = Minio(
                 self.internal_endpoint,
-                access_key=os.getenv("MINIO_ACCESS_KEY", "minioadmin"),
-                secret_key=os.getenv("MINIO_SECRET_KEY", "minioadmin"),
-                secure=False,
+                access_key=os.getenv("STORAGE_ACCESS_KEY", os.getenv("MINIO_ACCESS_KEY", "minioadmin")),
+                secret_key=os.getenv("STORAGE_SECRET_KEY", os.getenv("MINIO_SECRET_KEY", "minioadmin")),
+                secure=secure,
             )
-            self.bucket_name = "fiscal-documents"
             self._ensure_bucket_exists()
             logging.info(
                 f"Storage Service initialized successfully at {self.internal_endpoint}"
