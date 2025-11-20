@@ -46,40 +46,38 @@ The application follows a containerized microservices architecture:
 2. **Configure Environment**
    Copy the example environment file and configure your keys:
    bash
-   cp app/.env.example .env
+   cp .env.example .env
    # Edit .env with your settings (especially GOOGLE_API_KEY)
    
 
 3. **Run with Docker Compose**
    To start the full stack:
    bash
-   # Note: Deployment files are located in app/ but configured for root execution if moved or referenced correctly.
-   # For convenience, you can run:
-   docker-compose -f app/docker-compose.yml up --build
+   docker-compose up --build
    
 
    The application will be available at `http://localhost`.
 
 ## Setup Instructions
 
-### Moving Infrastructure Files (Recommended)
-For a standard deployment structure, move the following files from `app/` to the project root:
-- `app/Dockerfile`
-- `app/docker-compose.yml`
-- `app/.env.example`
-- `app/.dockerignore`
+### Infrastructure Files
+The Docker assets now live in the project root for a standard deployment structure:
+- `Dockerfile`
+- `docker-compose.yml`
+- `.env.example`
+- `.dockerignore`
 
-Then you can simply run `docker-compose up`.
+Run `docker-compose up` from the repository root to start the stack.
 
 ### Database Initialization
 The database tables are automatically created by Reflex. To seed initial data:
 bash
-docker-compose -f app/docker-compose.yml exec app python -m app.scripts.seed_data
+docker-compose exec app python -m app.scripts.seed_data
 
 
 ## Environment Variables
 
-See `app/.env.example` for a complete list of required variables.
+See `.env.example` for a complete list of required variables.
 
 ## Development Workflow
 
