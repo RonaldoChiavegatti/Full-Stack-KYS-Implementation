@@ -1,0 +1,73 @@
+version: "3.9"
+
+services:
+  app:
+    build: .
+    container_name: fiscal-assistant-app
+    env_file: .env
+    command: ["reflex", "run", "--env", "prod", "--backend-host", "0.0.0.0", "--backend-port", "8000", "--frontend-port", "3000", "--loglevel", "info"]
+    ports:
+      - "3000:3000"
+      - "8000:8000"
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+      - STORAGE_ENDPOINT=${STORAGE_ENDPOINT}
+      - STORAGE_PUBLIC_ENDPOINT=${STORAGE_PUBLIC_ENDPOINT}
+      - STORAGE_ACCESS_KEY=${STORAGE_ACCESS_KEY}
+      - STORAGE_SECRET_KEY=${STORAGE_SECRET_KEY}
+      - STORAGE_BUCKET=${STORAGE_BUCKET}
+      - STORAGE_SECURE=${STORAGE_SECURE}
+      - JWT_SECRET=${JWT_SECRET}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+    restart: unless-stopped
+
+  worker:
+    build: .
+    container_name: fiscal-assistant-worker
+    env_file: .env
+    command: ["celery", "-A", "app.celery_app.celery_app", "worker", "--loglevel=info"]
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+      - STORAGE_ENDPOINT=${STORAGE_ENDPOINT}
+      - STORAGE_PUBLIC_ENDPOINT=${STORAGE_PUBLIC_ENDPOINT}
+      - STORAGE_ACCESS_KEY=${STORAGE_ACCESS_KEY}
+      - STORAGE_SECRET_KEY=${STORAGE_SECRET_KEY}
+      - STORAGE_BUCKET=${STORAGE_BUCKET}
+      - STORAGE_SECURE=${STORAGE_SECURE}
+      - JWT_SECRET=${JWT_SECRET}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:15
+    container_name: fiscal-assistant-postgres
+    env_file: .env
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  redis:
+    image: redis:7
+    container_name: fiscal-assistant-redis
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

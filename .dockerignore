@@ -1,0 +1,16 @@
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+*.db
+*.sqlite3
+.reflex
+build
+node_modules
+.env
+.env.*
+.git
+.gitignore
+__pycache__/
+*.log
+.DS_Store
