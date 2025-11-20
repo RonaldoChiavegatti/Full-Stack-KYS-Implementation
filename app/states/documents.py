@@ -37,8 +37,15 @@ class DocumentState(rx.State):
         auth_state = await self.get_state(AuthState)
         if not auth_state.is_authenticated:
             return
-        self.is_uploading = True
         storage = StorageService()
+        if not storage.is_available:
+            yield rx.toast.error(
+                "Storage service unavailable. Please ensure MinIO is running.",
+                duration=5000,
+                close_button=True,
+            )
+            return
+        self.is_uploading = True
         for file in files:
             try:
                 upload_data = await file.read()
@@ -74,7 +81,8 @@ class DocumentState(rx.State):
         """Delete document from DB and MinIO."""
         try:
             storage = StorageService()
-            storage.delete_file(minio_path)
+            if storage.is_available:
+                storage.delete_file(minio_path)
             with rx.session() as session:
                 doc = session.get(Document, doc_id)
                 if doc:
@@ -89,7 +97,11 @@ class DocumentState(rx.State):
     def open_preview(self, doc: Document):
         """Open document preview modal."""
         storage = StorageService()
-        self.preview_url = storage.get_file_url(doc.minio_path)
+        if storage.is_available:
+            self.preview_url = storage.get_file_url(doc.minio_path)
+        else:
+            self.preview_url = ""
+            yield rx.toast.warning("Storage unavailable. Preview image not loaded.")
         self.preview_text = doc.extracted_text or "No text extracted yet."
         self.is_preview_open = True
 

@@ -8,10 +8,11 @@ from datetime import timedelta
 
 class StorageService:
     def __init__(self):
-        self.internal_endpoint = os.getenv("MINIO_ENDPOINT", "minio:9000")
-        self.public_endpoint = os.getenv(
-            "MINIO_PUBLIC_ENDPOINT", self.internal_endpoint
-        )
+        default_endpoint = "localhost:9000"
+        if os.path.exists("/.dockerenv"):
+            default_endpoint = "minio:9000"
+        self.internal_endpoint = os.getenv("MINIO_ENDPOINT", default_endpoint)
+        self.public_endpoint = os.getenv("MINIO_PUBLIC_ENDPOINT", "localhost:9000")
         try:
             self.client = Minio(
                 self.internal_endpoint,
@@ -21,9 +22,19 @@ class StorageService:
             )
             self.bucket_name = "fiscal-documents"
             self._ensure_bucket_exists()
+            logging.info(
+                f"Storage Service initialized successfully at {self.internal_endpoint}"
+            )
         except Exception as e:
-            logging.exception(f"Failed to initialize MinIO client: {e}")
+            logging.exception(
+                f"Storage Service unavailable (Endpoint: {self.internal_endpoint}): {e}"
+            )
             self.client = None
+
+    @property
+    def is_available(self) -> bool:
+        """Check if storage service is initialized and available."""
+        return self.client is not None
 
     def _ensure_bucket_exists(self):
         if not self.client:
