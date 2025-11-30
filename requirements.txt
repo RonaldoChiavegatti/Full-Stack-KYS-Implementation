@@ -1,0 +1,15 @@
+PyPDF2
+sqlmodel
+pyjwt
+python-multipart
+psycopg2-binary
+bcrypt
+sqlalchemy
+reflex
+pytesseract
+pillow
+celery
+redis
+minio
+google-generativeai
+google-genai
